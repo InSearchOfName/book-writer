@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "id": "book-writer",
   "version": "${version}",
-  "name": "Book Writer",
+  "name": "InSearchOfName's Book Writer",
   "description": "A client-side mod that allows you to quickly write text into multiple Minecraft books using the .write command.",
   "authors": [
-    "You!"
+    "Tommy Quatretemps (InSearchOfName)"
   ],
   "contact": {
     "homepage": "https://fabricmc.net/",
