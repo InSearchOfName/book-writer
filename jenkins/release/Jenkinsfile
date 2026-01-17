@@ -1,14 +1,16 @@
 pipeline {
     agent any
     
-    triggers {
-        githubPush()
+    parameters {
+        string(name: 'COMMIT_SHA', description: 'Git commit SHA to tag')
+        string(name: 'BASE_VERSION', description: 'Base app version (branch name)')
     }
     
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
+                sh 'git checkout ${COMMIT_SHA}'
             }
         }
         
@@ -22,22 +24,19 @@ pipeline {
         stage('Create Release Tag') {
             steps {
                 script {
-                    // Only run on merged PRs to version branches, not on PR builds
-                    if (env.BRANCH_NAME ==~ /^\d+\.\d+\.\d+$/ && !env.CHANGE_ID) {
-                        withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
-                            sh '''
-                                git config user.name "${GIT_USER}"
-                                
-                                # Get app version from build.gradle
-                                APP_VERSION=$(grep "version = " build.gradle | head -1 | sed "s/.*version = ['\"]\\([^'\"]*\\)['\"].*/\\1/")
-                                
-                                # Create tag: base_version-app_version
-                                TAG_NAME="${BRANCH_NAME}-v${APP_VERSION}"
-                                
-                                git tag -a ${TAG_NAME} -m "Release ${TAG_NAME}"
-                                git push https://${GIT_USER}:${GIT_PASS}@github.com/InSearchOfName/book-writer.git ${TAG_NAME}
-                            '''
-                        }
+                    withCredentials([usernamePassword(credentialsId: 'github', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+                        sh '''
+                            git config user.name "${GIT_USER}"
+                            
+                            # Get app version from build.gradle
+                            APP_VERSION=$(grep "version = " build.gradle | head -1 | sed "s/.*version = ['\"]\\([^'\"]*\\)['\"].*/\\1/")
+                            
+                            # Create tag: base_version-app_version
+                            TAG_NAME="${BASE_VERSION}-v${APP_VERSION}"
+                            
+                            git tag -a ${TAG_NAME} -m "Release ${TAG_NAME}"
+                            git push https://${GIT_USER}:${GIT_PASS}@github.com/InSearchOfName/book-writer.git ${TAG_NAME}
+                        '''
                     }
                 }
             }
