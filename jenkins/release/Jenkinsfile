@@ -32,7 +32,7 @@ pipeline {
                             if [ -f gradle.properties ]; then
                                 APP_VERSION=$(grep "version" gradle.properties | head -1 | awk -F'=' '{print $2}' | tr -d ' ')
                             else
-                                APP_VERSION=$(grep "version" gradle.properties | head -1 | awk -F= '{print $2}' | tr -d ' ')
+                                APP_VERSION=$(grep "mod_version" gradle.properties | head -1 | awk -F= '{print $2}' | tr -d ' ')
                             if [ -z "$APP_VERSION" ]; then
                                 APP_VERSION=$(grep "version" build.gradle | grep -v "//" | head -1 | awk -F"[\\'\\"]" '{print $2}' | tr -d ' ')
                             fi
