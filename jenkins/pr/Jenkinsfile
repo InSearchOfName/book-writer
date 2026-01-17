@@ -1,31 +1,35 @@
 pipeline {
     agent any
-
+    
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-
+        
         stage('Build') {
             steps {
                 sh 'chmod +x ./gradlew'
                 sh './gradlew clean build'
             }
         }
-
     }
-
+    
     post {
         success {
-            echo '✅ Pipeline completed successfully!'
-        }
-        failure {
-            echo '❌ Pipeline failed!'
+            script {
+                if (env.BRANCH_NAME ==~ /^\d+\.\d+\.\d+$/ && !env.CHANGE_ID) {
+                    build job: 'book-writer-release', 
+                          parameters: [
+                              string(name: 'COMMIT_SHA', value: env.GIT_COMMIT),
+                              string(name: 'BASE_VERSION', value: env.BRANCH_NAME)
+                          ]
+                }
+            }
         }
         always {
-            cleanWs() // Clean workspace after build
+            cleanWs()
         }
     }
 }
