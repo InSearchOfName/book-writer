@@ -1,0 +1,22 @@
+pipeline {
+    agent any
+
+    stages {
+        stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build') {
+            when {
+                expression { return env.GIT_TAG_NAME != null }
+            }
+            steps {
+                echo "Building tag: ${env.GIT_TAG_NAME}"
+                
+            }
+        }
+    }
+}
