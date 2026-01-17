@@ -77,39 +77,42 @@ pipeline {
                             APP_VERSION=$(grep '^mod_version=' gradle.properties | cut -d= -f2 | tr -d ' ')
                             TAG_NAME="${BASE_VERSION}-v${APP_VERSION}"
 
-                            ARTIFACT=$(find build/libs -name "*.jar" -type f | head -1)
+                            mkdir -p release-assets
+                            cp build/libs/*.jar release-assets/
 
-                            if [ -z "$ARTIFACT" ]; then
-                              echo "No artifact found"
-                              exit 1
-                            fi
+                            ZIP_NAME="book-writer-${TAG_NAME}.zip"
+                            zip -r "$ZIP_NAME" release-assets
 
-                            ARTIFACT_NAME=$(basename "$ARTIFACT")
-
-                            echo "Creating GitHub release: $TAG_NAME"
-                            echo "Uploading artifact: $ARTIFACT_NAME"
+                            echo "Created ZIP: $ZIP_NAME"
 
                             RELEASE_RESPONSE=$(curl -s -X POST \
-                              -H "Accept: application/vnd.github.v3+json" \
-                              -H "Authorization: token ${GIT_PASS}" \
-                              https://api.github.com/repos/InSearchOfName/book-writer/releases \
-                              -d "{\"tag_name\":\"${TAG_NAME}\",\"name\":\"Release ${TAG_NAME}\",\"body\":\"Automated release for ${TAG_NAME}\"}")
+                            -H "Accept: application/vnd.github.v3+json" \
+                            -H "Authorization: token ${GIT_PASS}" \
+                            https://api.github.com/repos/InSearchOfName/book-writer/releases \
+                            -d "{
+                                \\"tag_name\\": \\"${TAG_NAME}\\",
+                                \\"name\\": \\"Release ${TAG_NAME}\\",
+                                \\"body\\": \\"Automated release for ${TAG_NAME}\\"
+                            }")
 
-                            UPLOAD_URL=$(echo "$RELEASE_RESPONSE" | sed -n 's/.*"upload_url":[ ]*"\\([^"]*\\)".*/\\1/p' | sed 's/{.*}//')
+                            echo "$RELEASE_RESPONSE"
+
+                            UPLOAD_URL=$(echo "$RELEASE_RESPONSE" \
+                            | sed -n 's/.*"upload_url":[ ]*"\\([^"]*\\)".*/\\1/p' \
+                            | sed 's/{.*}//')
 
                             if [ -z "$UPLOAD_URL" ]; then
-                              echo "Failed to get upload_url"
-                              echo "$RELEASE_RESPONSE"
-                              exit 1
+                            echo "Failed to obtain upload_url"
+                            exit 1
                             fi
 
                             curl -X POST \
-                              -H "Authorization: token ${GIT_PASS}" \
-                              -H "Content-Type: application/octet-stream" \
-                              --data-binary @"$ARTIFACT" \
-                              "${UPLOAD_URL}?name=${ARTIFACT_NAME}"
+                            -H "Authorization: token ${GIT_PASS}" \
+                            -H "Content-Type: application/zip" \
+                            --data-binary @"$ZIP_NAME" \
+                            "${UPLOAD_URL}?name=${ZIP_NAME}"
 
-                            echo "Release created successfully"
+                            echo "GitHub release created and ZIP uploaded successfully"
                         '''
                     }
                 }
