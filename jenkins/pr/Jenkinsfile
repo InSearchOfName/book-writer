@@ -20,7 +20,7 @@ pipeline {
         success {
             script {
                 if (env.BRANCH_NAME ==~ /^\d+\.\d+\.\d+$/ && !env.CHANGE_ID) {
-                    build job: 'book-writer-release', 
+                    build job: 'book-writer/release', 
                           parameters: [
                               string(name: 'COMMIT_SHA', value: env.GIT_COMMIT),
                               string(name: 'BASE_VERSION', value: env.BRANCH_NAME)
