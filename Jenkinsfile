@@ -1,11 +1,5 @@
 pipeline {
-    agent any  // Run on any available agent
-
-    environment {
-        // Define environment variables here if needed
-        APP_NAME = 'MyApp'
-        DEPLOY_ENV = 'staging'
-    }
+    agent any
 
     stages {
         stage('Checkout') {
@@ -17,7 +11,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'chmod +x ./gradlew'
-                sh './gradlew build'
+                sh './gradlew clean build'
             }
         }
 
@@ -25,10 +19,13 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully!'
+            echo '✅ Pipeline completed successfully!'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo '❌ Pipeline failed!'
+        }
+        always {
+            cleanWs() // Clean workspace after build
         }
     }
 }
