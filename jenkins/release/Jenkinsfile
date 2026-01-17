@@ -3,7 +3,7 @@ pipeline {
     
     parameters {
         string(name: 'COMMIT_SHA', description: 'Git commit SHA to tag')
-        string(name: 'BASE_VERSION', description: 'Base app version (branch name)')
+        string(name: 'BASE_VERSION', description = 'Base app version (branch name)')
     }
     
     stages {
@@ -29,7 +29,9 @@ pipeline {
                             git config user.name "${GIT_USER}"
                             
                             # Get app version from build.gradle
-                            APP_VERSION=$(grep "version = " build.gradle | head -1 | sed "s/.*version = ['\"]\\([^'\"]*\\)['\"].*/\\1/")
+                            APP_VERSION=$(grep "version = " build.gradle | head -1 | sed "s/.*version = ['\\'\"]//" | sed "s/['\\'\"].*//" | tr -d ' ')
+                            
+                            echo "APP_VERSION: $APP_VERSION"
                             
                             # Create tag: base_version-app_version
                             TAG_NAME="${BASE_VERSION}-v${APP_VERSION}"
@@ -44,7 +46,7 @@ pipeline {
     }
     
     post {
-        always {
+        cleanup {
             cleanWs()
         }
     }
