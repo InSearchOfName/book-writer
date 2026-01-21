@@ -76,7 +76,7 @@ pipeline {
                 ]) {
                     sh '''
                         set -e
-                        source release.env
+                        . release.env
 
                         git config user.name "${GIT_USER}"
                         git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
@@ -128,7 +128,7 @@ pipeline {
                 ]) {
                     sh '''
                         set -e
-                        source release.env
+                        . release.env
 
                         curl --fail --location 'https://api.modrinth.com/v2/version' \
                         --header "Authorization: ${MODRINTH_TOKEN}" \
