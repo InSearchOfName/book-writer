@@ -60,6 +60,7 @@ pipeline {
     stage('GitHub Release') {
         when {
             allOf {
+                expression { env.BRANCH_NAME ==~ /^\d+\.\d+\.\d+$/ }
                 expression { fileExists('release.env') }
                 expression { !env.CHANGE_ID }
             }
@@ -76,7 +77,7 @@ pipeline {
                 ]) {
                     sh '''
                         set -e
-                        . release.env
+                        . "$WORKSPACE/release.env"
 
                         git config user.name "${GIT_USER}"
                         git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
@@ -113,6 +114,7 @@ pipeline {
     stage('Modrinth Release') {
         when {
             allOf {
+                expression { env.BRANCH_NAME ==~ /^\d+\.\d+\.\d+$/ }
                 expression { fileExists('release.env') }
                 expression { !env.CHANGE_ID }
             }
@@ -128,7 +130,7 @@ pipeline {
                 ]) {
                     sh '''
                         set -e
-                        . release.env
+                        . "$WORKSPACE/release.env"
 
                         curl --fail --location 'https://api.modrinth.com/v2/version' \
                         --header "Authorization: ${MODRINTH_TOKEN}" \
